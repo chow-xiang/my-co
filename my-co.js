@@ -6,7 +6,7 @@ function co(gen) {
 	
 	return new Promise(function (resolve, reject) {
 		
-		var interator = gen();
+		var interator = isGeneratorFunction(gen) ? gen() : gen;
 		var result = interator.next();
 
 		var toFulled = toFulledFactory(resolve, reject)
@@ -22,8 +22,8 @@ function toFulledFactory(resolve, reject){
 	return function toFulled(interator, result){
 
 		if(result.done) {return resolve(result.value)}
-		
-		toPromise(result).then((ret) => {
+
+		toPromise(result.value).then((ret) => {
 			toFulled(interator, interator.next(ret))
 		})
 	}
@@ -41,12 +41,24 @@ function toFulledFactory(resolve, reject){
 // }
 
 
-function toPromise (result) {
+function toPromise (value) {
 	
-	if(typeof result.value == 'function'){
-		return funToPromise(result.value)
+	// if function
+	if(typeof value == 'function'){
+		return funToPromise(value)
 	}
-	return Promise.resolve(result.value);
+	// if object
+	// if array
+	// if generator 
+	if(typeof value.next == 'function'){
+		return co(value);
+	}
+	// if promise
+	if(typeof value == 'promise'){
+		return valie;
+	}
+	// if normal
+	return Promise.resolve(value);
 }
 
 
@@ -61,3 +73,8 @@ function funToPromise (fun) {
 	})
 }
 
+function isGeneratorFunction(obj) {
+	var constructor = obj.constructor;
+	if (!constructor) return false;
+	if ('GeneratorFunction' === constructor.name || 'GeneratorFunction' === constructor.displayName) return true;
+}

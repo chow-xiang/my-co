@@ -7,11 +7,7 @@ var http = require('http');
 
 function* test(){
 
-	var result = yield done => {
-		http.get('http://www.baidu.com', (result) => {
-			done(null, result);
-		})
-	}
+	var result = yield getAnysc();
 	console.log(result);
 
 	var a = yield true;
@@ -32,6 +28,14 @@ function* test(){
 	return 2;
 }
 
+
+function* getAnysc(){
+	return yield done => {
+		http.get('http://www.baidu.com', (result) => {
+			done(null, result);
+		})
+	}
+}
 
 
 console.log(typeof test);
