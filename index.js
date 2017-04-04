@@ -17,6 +17,8 @@ function* test(){
 
 	var b = yield 1;
 	console.log(b)
+
+	return 2;
 }
 
 
@@ -24,7 +26,20 @@ function* test(){
 console.log(typeof test);
 console.log(typeof test());
 
-co(test)
+co(test).then(val => {console.log(val)})
+
+
+
+var a = 1;
+function testC(){
+
+	console.log(a);
+	const a = 1;
+	console.log(a);
+}
+
+
+// testC();
 
 
 
@@ -42,21 +57,17 @@ function co(gen) {
 
 function toFulled(interator, result, resolve, reject){
 
+	if(result.done){return resolve(result.value)}
+
 	if(result && typeof result.then == 'function'){
 		result.then((ret) => {
 			result = toNext(interator, ret);
-
-			if(result.done){return resolve(ret)}
 			toFulled(interator, result, resolve, reject)
 		})
 	}else{
 		result = toNext(interator, result.value);
-		
-		if(result.done){return resolve(interator.value)}
 		toFulled(interator, result, resolve, reject)
 	}
-
-	
 }
 
 
