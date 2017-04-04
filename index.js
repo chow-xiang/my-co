@@ -12,19 +12,20 @@ function* test(){
 			done(null, result);
 		})
 	}
-	// console.log(result);
+	console.log(result);
 
-	// var a = yield true;
-	// console.log(a);
+	var a = yield true;
+	console.log(a);
 
-	// var b = yield 1;
-	// console.log(b)
+	var b = yield 1;
+	console.log(b)
 
 
-	for(var i=0;i<10000000;i++){
-		var index = yield done => {
-			done(null, i)
-		};
+	for(var i=0;i<20000;i++){
+		// var index = yield done => {result.value
+		// 	done(null, i);
+		// }
+		var index = yield i;
 		console.log(index);
 	}
 

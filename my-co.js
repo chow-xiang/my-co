@@ -7,10 +7,13 @@ function co(gen) {
 	return new Promise(function (resolve, reject) {
 		
 		var interator = gen();
-		var result    = toNext(interator);
+		var result = interator.next();
 
 		var toFulled = toFulledFactory(resolve, reject)
-		toFulled(interator, result)
+		toFulled(interator, result);
+
+		// thunk函数的区别
+		// toFulled(interator, result, resolve, reject);
 	})
 }
 
@@ -18,41 +21,42 @@ function toFulledFactory(resolve, reject){
 
 	return function toFulled(interator, result){
 
-		if(result.done){return resolve(result.value)}
-
-		if(result && typeof result.then == 'function'){
-
-			result.then((ret) => {
-				result = toNext(interator, ret);
-				toFulled(interator, result)
-			})
-		}else{
-
-			result = toNext(interator, result.value);
-			toFulled(interator, result)
-		}
+		if(result.done) {return resolve(result.value)}
+		
+		toPromise(result).then((ret) => {
+			toFulled(interator, interator.next(ret))
+		})
 	}
 }
 
 
+// function toFulled(interator, result, resolve, reject){
+
+// 	if(result.done) {return resolve(result.value)}
+// 	result = toPromise(result);
+
+// 	result.then((ret) => {
+// 		toFulled(interator, interator.next(ret), resolve, reject)
+// 	})
+// }
 
 
-function toNext (interator, value) {
+function toPromise (result) {
 	
-	var result = interator.next(value);
 	if(typeof result.value == 'function'){
 		return funToPromise(result.value)
 	}
-	return result;
+	return Promise.resolve(result.value);
 }
+
 
 
 
 function funToPromise (fun) {
 	return new Promise((resolve, reject) => {
 		fun((error, result) => {
-			if(error) reject(error);
-			if(result) resolve(result);
+			if(error) return reject(error);
+			resolve(result);
 		});
 	})
 }
