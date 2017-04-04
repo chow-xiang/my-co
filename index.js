@@ -1,6 +1,6 @@
 'use strict';
 
-// var co = require('./co');
+var co = require('./co');
 var http = require('http');
 
 function* test(){
@@ -10,13 +10,21 @@ function* test(){
 			done(null, result);
 		})
 	}
-	console.log(result);
+	// console.log(result);
 
-	var a = yield true;
-	console.log(a);
+	// var a = yield true;
+	// console.log(a);
 
-	var b = yield 1;
-	console.log(b)
+	// var b = yield 1;
+	// console.log(b)
+
+
+	for(var i=0;i<10000000;i++){
+		var index = yield done => {
+			done(null, i)
+		};
+		console.log(index);
+	}
 
 	return 2;
 }
@@ -30,45 +38,55 @@ co(test).then(val => {console.log(val)})
 
 
 
-var a = 1;
-function testC(){
+// var a = 1;
+// function testC(){
 
-	console.log(a);
-	const a = 1;
-	console.log(a);
-}
-
+// 	console.log(a);
+// 	const a = 1;
+// 	console.log(a);
+// }
 
 // testC();
 
 
 
-function co(gen) {
+
+
+
+
+// function co(gen) {
 	
-	return new Promise(function (resolve, reject) {
+// 	return new Promise(function (resolve, reject) {
 		
-		var interator = gen();
-		var result    = toNext(interator);
+// 		var interator = gen();
+// 		var result    = toNext(interator);
 
-		toFulled(interator, result, resolve, reject)
-	})
-}
+// 		var toFulled = toFulledFactory(resolve, reject)
+// 		toFulled(interator, result)
+// 	})
+// }
 
+function toFulledFactory(resolve, reject){
 
-function toFulled(interator, result, resolve, reject){
+	return function toFulled(interator, result){
 
-	if(result.done){return resolve(result.value)}
+		if(result.done){return resolve(result.value)}
 
-	if(result && typeof result.then == 'function'){
-		result.then((ret) => {
-			result = toNext(interator, ret);
-			toFulled(interator, result, resolve, reject)
-		})
-	}else{
-		result = toNext(interator, result.value);
-		toFulled(interator, result, resolve, reject)
+		if(result && typeof result.then == 'function'){
+
+			result.then((ret) => {
+				result = toNext(interator, ret);
+				toFulled(interator, result)
+			})
+		}else{
+
+			result = toNext(interator, result.value);
+			toFulled(interator, result)
+		}
 	}
 }
+
+
 
 
 function toNext (interator, value) {
